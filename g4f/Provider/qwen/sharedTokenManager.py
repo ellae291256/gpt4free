@@ -86,7 +86,7 @@ class SharedTokenManager(AuthFileMixin):
 
     async def getValidCredentials(self, qwen_client: IQwenOAuth2Client, force_refresh: bool = False):
         try:
-            self.checkAndReloadIfNeeded()
+            await self.checkAndReloadIfNeeded()
 
             if (
                 self.memory_cache["credentials"]
@@ -107,7 +107,7 @@ class SharedTokenManager(AuthFileMixin):
                 raise
             raise TokenManagerError(TokenError.REFRESH_FAILED, str(e), e)
 
-    def checkAndReloadIfNeeded(self):
+    async def checkAndReloadIfNeeded(self):
         now = int(time.time() * 1000)
         if now - self.memory_cache["last_check"] < CACHE_CHECK_INTERVAL_MS:
             return
@@ -155,7 +155,7 @@ class SharedTokenManager(AuthFileMixin):
                 raise TokenManagerError(TokenError.NO_REFRESH_TOKEN, "No refresh token")
             await self.acquireLock(lock_path)
 
-            self.checkAndReloadIfNeeded()
+            await self.checkAndReloadIfNeeded()
 
             if (
                 not force_refresh
